@@ -1,0 +1,591 @@
+/* Access Management Module - Detailed CSS */
+
+/* Base Styles */
+.o_access_management_container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.o_access_management_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.o_access_management_header h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Loading State */
+.o_access_management_loading {
+    text-align: center;
+    padding: 60px 0;
+    font-size: 18px;
+    color: #6c757d;
+}
+
+.o_access_management_loading i {
+    margin-right: 10px;
+    font-size: 24px;
+}
+
+/* Stats Summary */
+.o_access_rules_summary {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.o_stat_box {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+    flex: 1;
+}
+
+.o_stat_value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #2c3e50;
+    display: block;
+}
+
+.o_stat_text {
+    color: #6c757d;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Access Rules List */
+.o_access_rules_list {
+    display: grid;
+    gap: 20px;
+}
+
+.o_access_rule_item {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.o_access_rule_item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.o_rule_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.o_rule_header h4 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.o_rule_details {
+    display: grid;
+    gap: 10px;
+}
+
+.o_rule_section {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.o_rule_section strong {
+    color: #495057;
+    margin-right: 8px;
+}
+
+/* Rule Card Styles */
+.o_access_rule_card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.o_access_rule_card:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+}
+
+.o_rule_card_header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.o_rule_card_title h5 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.o_rule_card_actions {
+    display: flex;
+    gap: 10px;
+}
+
+.o_rule_card_body {
+    padding: 20px;
+}
+
+.o_rule_stat {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.o_rule_stat i {
+    width: 20px;
+    color: #6c757d;
+    margin-right: 8px;
+}
+
+.o_stat_label {
+    color: #6c757d;
+    margin-right: 5px;
+}
+
+.o_stat_value {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.o_rule_card_footer {
+    background: #f8f9fa;
+    padding: 10px 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Access Denied Dialog */
+.o_access_denied_dialog {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.o_dialog_header {
+    background: #f8f9fa;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.o_dialog_header h4 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.o_dialog_body {
+    padding: 20px;
+}
+
+.o_access_denied_details {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.o_dialog_footer {
+    padding: 20px;
+    border-top: 1px solid #e9ecef;
+    text-align: right;
+}
+
+/* Field Access Indicators */
+.o_field_access_indicator {
+    display: inline-flex;
+    gap: 5px;
+    margin-left: 10px;
+}
+
+.o_access_readonly,
+.o_access_invisible,
+.o_access_required {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: help;
+}
+
+.o_access_readonly {
+    background: #ffc107;
+    color: white;
+}
+
+.o_access_invisible {
+    background: #6c757d;
+    color: white;
+}
+
+.o_access_required {
+    background: #dc3545;
+    color: white;
+}
+
+/* Menu Access Overlay */
+.o_menu_access_overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+}
+
+.o_overlay_content {
+    background: white;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    max-width: 400px;
+}
+
+.o_overlay_content i {
+    color: #dc3545;
+    margin-bottom: 20px;
+}
+
+.o_overlay_content h4 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+/* Test Result Styles */
+.o_test_result_container {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.o_test_summary {
+    margin-bottom: 30px;
+}
+
+.o_test_details {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.o_test_details h5 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.o_restriction_stat {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.o_restriction_stat i {
+    width: 30px;
+    color: #6c757d;
+    font-size: 18px;
+}
+
+.o_restriction_stat span {
+    flex: 1;
+    color: #6c757d;
+}
+
+.o_restriction_stat strong {
+    color: #2c3e50;
+    font-size: 20px;
+}
+
+/* Dashboard Styles */
+.o_access_management_dashboard {
+    background: #f0f2f5;
+    min-height: 100vh;
+    padding: 30px;
+}
+
+.o_dashboard_header {
+    background: white;
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.o_dashboard_header h2 {
+    margin: 0;
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+.o_dashboard_actions {
+    display: flex;
+    gap: 15px;
+}
+
+.o_dashboard_stats {
+    margin-bottom: 30px;
+}
+
+.o_stat_card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+}
+
+.o_stat_card:hover {
+    transform: translateY(-5px);
+}
+
+.o_stat_icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+}
+
+.o_stat_icon.bg-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.o_stat_icon.bg-success {
+    background: linear-gradient(135deg, #28a745 0%, #19692c 100%);
+}
+
+.o_stat_icon.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+}
+
+.o_stat_icon.bg-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);
+}
+
+.o_stat_content h3 {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.o_stat_content p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 16px;
+}
+
+.o_dashboard_section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+}
+
+.o_dashboard_section h4 {
+    margin: 0 0 20px 0;
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.o_recent_rules {
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.o_recent_rules::-webkit-scrollbar {
+    width: 8px;
+}
+
+.o_recent_rules::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.o_recent_rules::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.o_recent_rules::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.o_quick_actions button {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 16px;
+}
+
+.o_quick_actions button i {
+    width: 24px;
+}
+
+.o_system_info p {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.o_system_info strong {
+    color: #495057;
+}
+
+/* Access Matrix Styles */
+.o_access_matrix_container {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.o_matrix_controls {
+    margin-bottom: 30px;
+}
+
+.o_model_selector {
+    max-width: 300px;
+}
+
+.o_access_matrix {
+    font-size: 14px;
+}
+
+.o_access_matrix thead th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+    padding: 15px;
+    text-align: center;
+}
+
+.o_access_matrix tbody td {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.o_access_matrix tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.o_domain_preview {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #495057;
+    cursor: help;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .o_dashboard_header {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .o_dashboard_actions {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .o_stat_card {
+        margin-bottom: 15px;
+    }
+    
+    .o_access_matrix {
+        font-size: 12px;
+    }
+    
+    .o_access_matrix thead th,
+    .o_access_matrix tbody td {
+        padding: 8px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.o_access_rule_item,
+.o_access_rule_card,
+.o_stat_card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Print Styles */
+@media print {
+    .o_dashboard_actions,
+    .o_quick_actions,
+    .o_refresh_rules {
+        display: none;
+    }
+    
+    .o_access_management_dashboard {
+        background: white;
+        padding: 20px;
+    }
+    
+    .o_stat_card,
+    .o_dashboard_section {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+}
