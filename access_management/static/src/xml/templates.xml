@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    
+    <!-- Main Access Management Template -->
+    <t t-name="access_management.AccessManagement">
+        <div class="o_access_management_container">
+            <div class="o_access_management_header">
+                <h2>Access Management</h2>
+                <button class="btn btn-primary o_refresh_rules" t-on-click="loadAccessRules">
+                    <i class="fa fa-refresh"/> Refresh Rules
+                </button>
+            </div>
+            
+            <div t-if="accessRules.loading" class="o_access_management_loading">
+                <i class="fa fa-spinner fa-spin"/> Loading access rules...
+            </div>
+            
+            <div t-else="" class="o_access_management_content">
+                <div class="o_access_rules_summary">
+                    <div class="o_stat_box">
+                        <span class="o_stat_value">
+                            <t t-esc="accessRules.rules.length"/>
+                        </span>
+                        <span class="o_stat_text">Active Rules</span>
+                    </div>
+                </div>
+                
+                <div class="o_access_rules_list">
+                    <t t-foreach="accessRules.rules" t-as="rule" t-key="rule.id">
+                        <div class="o_access_rule_item">
+                            <div class="o_rule_header">
+                                <h4 t-esc="rule.name"/>
+                                <span class="badge badge-success" t-if="rule.active">Active</span>
+                                <span class="badge badge-danger" t-else="">Inactive</span>
+                            </div>
+                            
+                            <div class="o_rule_details">
+                                <div t-if="rule.hidden_menus.length" class="o_rule_section">
+                                    <strong>Hidden Menus:</strong>
+                                    <span t-esc="rule.hidden_menus.length"/> items
+                                </div>
+                                
+                                <div t-if="Object.keys(rule.field_modifications).length" class="o_rule_section">
+                                    <strong>Field Modifications:</strong>
+                                    <ul>
+                                        <li t-foreach="Object.entries(rule.field_modifications)" 
+                                            t-as="[model, fields]" t-key="model">
+                                            <t t-esc="model"/>: <t t-esc="Object.keys(fields).length"/> fields
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div t-if="rule.hidden_elements.length" class="o_rule_section">
+                                    <strong>Hidden Elements:</strong>
+                                    <span t-esc="rule.hidden_elements.length"/> elements
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+    
+    <!-- Access Rule Card Template -->
+    <t t-name="access_management.RuleCard">
+        <div class="o_access_rule_card" t-att-data-rule-id="rule.id">
+            <div class="o_rule_card_header">
+                <div class="o_rule_card_title">
+                    <h5 t-esc="rule.name"/>
+                </div>
+                <div class="o_rule_card_actions">
+                    <button class="btn btn-sm btn-outline-primary o_test_rule" 
+                            t-att-data-rule-id="rule.id"
+                            t-on-click="testRule">
+                        <i class="fa fa-flask"/> Test
+                    </button>
+                    <button class="btn btn-sm btn-outline-info o_view_rule" 
+                            t-att-data-rule-id="rule.id"
+                            t-on-click="viewRule">
+                        <i class="fa fa-eye"/> View
+                    </button>
+                </div>
+            </div>
+            
+            <div class="o_rule_card_body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="o_rule_stat">
+                            <i class="fa fa-users"/>
+                            <span class="o_stat_label">Users:</span>
+                            <span class="o_stat_value" t-esc="rule.user_count || 0"/>
+                        </div>
+                        <div class="o_rule_stat">
+                            <i class="fa fa-group"/>
+                            <span class="o_stat_label">Groups:</span>
+                            <span class="o_stat_value" t-esc="rule.group_count || 0"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="o_rule_stat">
+                            <i class="fa fa-ban"/>
+                            <span class="o_stat_label">Restrictions:</span>
+                            <span class="o_stat_value" t-esc="rule.total_restrictions || 0"/>
+                        </div>
+                        <div class="o_rule_stat">
+                            <i class="fa fa-building"/>
+                            <span class="o_stat_label">Company:</span>
+                            <span class="o_stat_value" t-esc="rule.company_name || 'All'"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="o_rule_card_footer">
+                <small class="text-muted">
+                    Created by <t t-esc="rule.created_by"/> on 
+                    <t t-esc="formatDate(rule.created_on)"/>
+                </small>
+            </div>
+        </div>
+    </t>
+    
+    <!-- Access Denied Dialog Template -->
+    <t t-name="access_management.AccessDeniedDialog">
+        <div class="o_access_denied_dialog">
+            <div class="o_dialog_header">
+                <h4><i class="fa fa-ban text-danger"/> Access Denied</h4>
+            </div>
+            <div class="o_dialog_body">
+                <p>You don't have permission to perform this action.</p>
+                <div t-if="details" class="o_access_denied_details">
+                    <strong>Details:</strong>
+                    <ul>
+                        <li t-if="details.model">Model: <t t-esc="details.model"/></li>
+                        <li t-if="details.operation">Operation: <t t-esc="details.operation"/></li>
+                        <li t-if="details.field">Field: <t t-esc="details.field"/></li>
+                        <li t-if="details.rule">Rule: <t t-esc="details.rule"/></li>
+                    </ul>
+                </div>
+                <p>Please contact your system administrator if you believe this is an error.</p>
+            </div>
+            <div class="o_dialog_footer">
+                <button class="btn btn-primary" t-on-click="close">OK</button>
+            </div>
+        </div>
+    </t>
+    
+    <!-- Field Access Indicator Template -->
+    <t t-name="access_management.FieldAccessIndicator">
+        <div class="o_field_access_indicator">
+            <t t-if="readonly">
+                <span class="o_access_readonly" title="This field is read-only">
+                    <i class="fa fa-lock"/>
+                </span>
+            </t>
+            <t t-if="invisible">
+                <span class="o_access_invisible" title="This field is hidden">
+                    <i class="fa fa-eye-slash"/>
+                </span>
+            </t>
+            <t t-if="required">
+                <span class="o_access_required" title="This field is required">
+                    <i class="fa fa-asterisk text-danger"/>
+                </span>
+            </t>
+        </div>
+    </t>
+    
+    <!-- Menu Access Overlay Template -->
+    <t t-name="access_management.MenuAccessOverlay">
+        <div class="o_menu_access_overlay">
+            <div class="o_overlay_content">
+                <i class="fa fa-lock fa-3x"/>
+                <h4>Access Restricted</h4>
+                <p>You don't have permission to access this menu.</p>
+                <button class="btn btn-primary" t-on-click="goBack">
+                    <i class="fa fa-arrow-left"/> Go Back
+                </button>
+            </div>
+        </div>
+    </t>
+    
+    <!-- Access Rule Test Result Template -->
+    <t t-name="access_management.TestResult">
+        <div class="o_test_result_container">
+            <h4>Access Rule Test Results</h4>
+            
+            <div class="o_test_summary">
+                <div class="alert" t-att-class="result.applies ? 'alert-success' : 'alert-warning'">
+                    <t t-if="result.applies">
+                        <i class="fa fa-check-circle"/> This rule applies to the test user
+                    </t>
+                    <t t-else="">
+                        <i class="fa fa-exclamation-triangle"/> This rule does not apply to the test user
+                        <div t-if="result.reason" class="mt-2">
+                            <strong>Reason:</strong> <t t-esc="result.reason"/>
+                        </div>
+                    </t>
+                </div>
+            </div>
+            
+            <div t-if="result.applies" class="o_test_details">
+                <h5>Applied Restrictions:</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="o_restriction_stat">
+                            <i class="fa fa-bars"/>
+                            <span>Hidden Menus:</span>
+                            <strong t-esc="result.hidden_menus || 0"/>
+                        </div>
+                        <div class="o_restriction_stat">
+                            <i class="fa fa-database"/>
+                            <span>Model Restrictions:</span>
+                            <strong t-esc="result.model_restrictions || 0"/>
+                        </div>
+                        <div class="o_restriction_stat">
+                            <i class="fa fa-list"/>
+                            <span>Field Restrictions:</span>
+                            <strong t-esc="result.field_restrictions || 0"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="o_restriction_stat">
+                            <i class="fa fa-filter"/>
+                            <span>Domain Restrictions:</span>
+                            <strong t-esc="result.domain_restrictions || 0"/>
+                        </div>
+                        <div class="o_restriction_stat">
+                            <i class="fa fa-square-o"/>
+                            <span>Button Restrictions:</span>
+                            <strong t-esc="result.button_restrictions || 0"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+    
+    <!-- Access Management Dashboard Template -->
+    <t t-name="access_management.Dashboard">
+        <div class="o_access_management_dashboard">
+            <div class="o_dashboard_header">
+                <h2>Access Management Dashboard</h2>
+                <div class="o_dashboard_actions">
+                    <button class="btn btn-primary" t-on-click="createNewRule">
+                        <i class="fa fa-plus"/> New Rule
+                    </button>
+                    <button class="btn btn-secondary" t-on-click="importRules">
+                        <i class="fa fa-upload"/> Import
+                    </button>
+                    <button class="btn btn-secondary" t-on-click="exportRules">
+                        <i class="fa fa-download"/> Export
+                    </button>
+                </div>
+            </div>
+            
+            <div class="o_dashboard_stats">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="o_stat_card">
+                            <div class="o_stat_icon bg-primary">
+                                <i class="fa fa-shield"/>
+                            </div>
+                            <div class="o_stat_content">
+                                <h3 t-esc="stats.total_rules"/>
+                                <p>Total Rules</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="o_stat_card">
+                            <div class="o_stat_icon bg-success">
+                                <i class="fa fa-check-circle"/>
+                            </div>
+                            <div class="o_stat_content">
+                                <h3 t-esc="stats.active_rules"/>
+                                <p>Active Rules</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="o_stat_card">
+                            <div class="o_stat_icon bg-info">
+                                <i class="fa fa-users"/>
+                            </div>
+                            <div class="o_stat_content">
+                                <h3 t-esc="stats.affected_users"/>
+                                <p>Affected Users</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="o_stat_card">
+                            <div class="o_stat_icon bg-warning">
+                                <i class="fa fa-ban"/>
+                            </div>
+                            <div class="o_stat_content">
+                                <h3 t-esc="stats.total_restrictions"/>
+                                <p>Total Restrictions</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="o_dashboard_content">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="o_dashboard_section">
+                            <h4>Recent Rules</h4>
+                            <div class="o_recent_rules">
+                                <t t-foreach="recentRules" t-as="rule" t-key="rule.id">
+                                    <t t-call="access_management.RuleCard">
+                                        <t t-set="rule" t-value="rule"/>
+                                    </t>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="o_dashboard_section">
+                            <h4>Quick Actions</h4>
+                            <div class="o_quick_actions">
+                                <button class="btn btn-block btn-outline-primary mb-2" 
+                                        t-on-click="showUserAccess">
+                                    <i class="fa fa-user"/> View User Access
+                                </button>
+                                <button class="btn btn-block btn-outline-secondary mb-2" 
+                                        t-on-click="showGroupAccess">
+                                    <i class="fa fa-group"/> View Group Access
+                                </button>
+                                <button class="btn btn-block btn-outline-info mb-2" 
+                                        t-on-click="runAudit">
+                                    <i class="fa fa-search"/> Run Access Audit
+                                </button>
+                                <button class="btn btn-block btn-outline-warning" 
+                                        t-on-click="showReports">
+                                    <i class="fa fa-bar-chart"/> View Reports
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="o_dashboard_section mt-4">
+                            <h4>System Info</h4>
+                            <div class="o_system_info">
+                                <p><strong>Version:</strong> 16.0.1.0.0</p>
+                                <p><strong>Last Update:</strong> <t t-esc="formatDate(lastUpdate)"/></p>
+                                <p><strong>Cache Status:</strong> 
+                                    <span class="badge badge-success">Active</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+    
+    <!-- Access Matrix Template -->
+    <t t-name="access_management.AccessMatrix">
+        <div class="o_access_matrix_container">
+            <h3>Access Matrix</h3>
+            <div class="o_matrix_controls">
+                <select class="form-control o_model_selector" t-on-change="onModelChange">
+                    <option value="">Select Model...</option>
+                    <t t-foreach="models" t-as="model" t-key="model.id">
+                        <option t-att-value="model.id" t-esc="model.name"/>
+                    </t>
+                </select>
+            </div>
+            
+            <div class="o_matrix_content" t-if="selectedModel">
+                <table class="table table-bordered o_access_matrix">
+                    <thead>
+                        <tr>
+                            <th>User/Group</th>
+                            <th>Read</th>
+                            <th>Write</th>
+                            <th>Create</th>
+                            <th>Delete</th>
+                            <th>Field Access</th>
+                            <th>Domain</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="matrixData" t-as="entry" t-key="entry.id">
+                            <tr>
+                                <td>
+                                    <t t-if="entry.type === 'user'">
+                                        <i class="fa fa-user"/> <t t-esc="entry.name"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-group"/> <t t-esc="entry.name"/>
+                                    </t>
+                                </td>
+                                <td class="text-center">
+                                    <t t-if="entry.permissions.read">
+                                        <i class="fa fa-check text-success"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-times text-danger"/>
+                                    </t>
+                                </td>
+                                <td class="text-center">
+                                    <t t-if="entry.permissions.write">
+                                        <i class="fa fa-check text-success"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-times text-danger"/>
+                                    </t>
+                                </td>
+                                <td class="text-center">
+                                    <t t-if="entry.permissions.create">
+                                        <i class="fa fa-check text-success"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-times text-danger"/>
+                                    </t>
+                                </td>
+                                <td class="text-center">
+                                    <t t-if="entry.permissions.unlink">
+                                        <i class="fa fa-check text-success"/>
+                                    </t>
+                                    <t t-else="">
+                                        <i class="fa fa-times text-danger"/>
+                                    </t>
+                                </td>
+                                <td>
+                                    <t t-if="entry.field_restrictions">
+                                        <span class="badge badge-warning">
+                                            <t t-esc="entry.field_restrictions"/> fields
+                                        </span>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="text-muted">None</span>
+                                    </t>
+                                </td>
+                                <td>
+                                    <t t-if="entry.domain">
+                                        <code class="o_domain_preview" 
+                                              t-att-title="entry.domain"
+                                              t-esc="truncate(entry.domain, 30)"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span class="text-muted">None</span>
+                                    </t>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+    
+</templates>
