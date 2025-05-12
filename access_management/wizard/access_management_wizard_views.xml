@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu Wizard -->
+    <record id="view_access_management_menu_wizard_form" model="ir.ui.view">
+        <field name="name">access.management.menu.wizard.form</field>
+        <field name="model">access.management.menu.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Add Menu to Hide">
+                <group>
+                    <field name="access_id" invisible="1"/>
+                    <field name="menu_id" options="{'no_create': True}"
+                           domain="[('parent_id', '!=', False)]"/>
+                    <field name="parent_menu_id" readonly="1" 
+                           attrs="{'invisible': [('parent_menu_id', '=', False)]}"/>
+                    <field name="hidden"/>
+                    <field name="apply_to_children" 
+                           attrs="{'invisible': [('menu_id', '=', False)]}"/>
+                </group>
+                <footer>
+                    <button name="action_add_menu" type="object" 
+                            string="Add Menu" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" 
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_add_menu_wizard" model="ir.actions.act_window">
+        <field name="name">Add Menu</field>
+        <field name="res_model">access.management.menu.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_access_id': active_id}</field>
+    </record>
+    
+    <!-- Import Wizard -->
+    <record id="view_access_management_import_wizard_form" model="ir.ui.view">
+        <field name="name">access.management.import.wizard.form</field>
+        <field name="model">access.management.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Import Access Rules">
+                <group>
+                    <field name="file_data" filename="file_name" 
+                           widget="binary" required="1"/>
+                    <field name="file_name" invisible="1"/>
+                    <field name="import_type" widget="radio"/>
+                    <field name="update_existing"/>
+                </group>
+                <div class="alert alert-info" role="alert">
+                    <p><strong>File Format:</strong></p>
+                    <ul>
+                        <li>CSV or Excel (.xlsx) files are supported</li>
+                        <li>First row should contain column headers</li>
+                        <li>Required columns vary by import type</li>
+                    </ul>
+                </div>
+                <footer>
+                    <button name="action_import" type="object" 
+                            string="Import" class="btn-primary"
+                            confirm="Are you sure you want to import these rules?"/>
+                    <button string="Cancel" class="btn-secondary" 
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_access_management_import_wizard" model="ir.actions.act_window">
+        <field name="name">Import Access Rules</field>
+        <field name="res_model">access.management.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    
+    <!-- Copy Wizard -->
+    <record id="view_access_management_copy_wizard_form" model="ir.ui.view">
+        <field name="name">access.management.copy.wizard.form</field>
+        <field name="model">access.management.copy.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Copy Access Rule">
+                <group>
+                    <field name="source_id" invisible="1"/>
+                    <field name="name" placeholder="Enter new rule name"/>
+                </group>
+                <separator string="Copy Options"/>
+                <group col="2">
+                    <group string="Access Types">
+                        <field name="copy_menu_access"/>
+                        <field name="copy_model_access"/>
+                        <field name="copy_field_access"/>
+                        <field name="copy_domain_access"/>
+                    </group>
+                    <group string="Additional Options">
+                        <field name="copy_button_tab_access"/>
+                        <field name="copy_search_panel_access"/>
+                        <field name="copy_chatter_access"/>
+                        <separator/>
+                        <field name="copy_users"/>
+                        <field name="copy_groups"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_copy" type="object" 
+                            string="Copy" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" 
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_access_management_copy_wizard" model="ir.actions.act_window">
+        <field name="name">Copy Access Rule</field>
+        <field name="res_model">access.management.copy.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    
+    <!-- Add actions to the form view button box -->
+    <record id="access_management_form_buttons" model="ir.ui.view">
+        <field name="name">access.management.form.buttons</field>
+        <field name="model">access.management</field>
+        <field name="inherit_id" ref="view_access_management_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="%(action_access_management_copy_wizard)d" 
+                        type="action" class="oe_stat_button" 
+                        icon="fa-copy"
+                        context="{'default_source_id': active_id}">
+                    <span>Copy Rule</span>
+                </button>
+                <button name="%(action_access_management_import_wizard)d" 
+                        type="action" class="oe_stat_button" 
+                        icon="fa-upload">
+                    <span>Import</span>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>
