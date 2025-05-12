@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Portal Home Counter -->
+    <template id="portal_my_home_access_rules" name="Access Rules" inherit_id="portal.portal_my_home">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="title">Access Rules</t>
+                <t t-set="url" t-value="'/my/access-rules'"/>
+                <t t-set="placeholder_count" t-value="'access_rules_count'"/>
+            </t>
+        </xpath>
+    </template>
+    
+    <!-- Access Rules List -->
+    <template id="portal_my_access_rules" name="My Access Rules">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Access Rules</t>
+            </t>
+            
+            <t t-if="not rules">
+                <div class="alert alert-info" role="alert">
+                    <p>No access rules found.</p>
+                </div>
+            </t>
+            
+            <t t-if="rules" t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Type</th>
+                        <th>Restrictions</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="rules" t-as="rule">
+                        <tr>
+                            <td>
+                                <a t-attf-href="/my/access-rules/#{rule.id}">
+                                    <span t-field="rule.name"/>
+                                </a>
+                            </td>
+                            <td>
+                                <span t-if="rule.active" class="badge badge-success">Active</span>
+                                <span t-else="" class="badge badge-secondary">Inactive</span>
+                            </td>
+                            <td>
+                                <span t-if="rule.apply_by_group">Group-based</span>
+                                <span t-else="">User-based</span>
+                            </td>
+                            <td>
+                                <span t-field="rule.access_rules_count"/>
+                            </td>
+                            <td>
+                                <span t-field="rule.create_date" t-options='{"widget": "date"}'/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+    
+    <!-- Access Rule Detail -->
+    <template id="portal_access_rule_detail" name="Access Rule Detail">
+        <t t-call="portal.portal_layout">
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-12">
+                        <ol class="breadcrumb mb-4">
+                            <li class="breadcrumb-item"><a href="/my/home">My Account</a></li>
+                            <li class="breadcrumb-item"><a href="/my/access-rules">Access Rules</a></li>
+                            <li class="breadcrumb-item active" t-esc="rule.name"/>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <span t-field="rule.name"/>
+                            <span t-if="rule.active" class="badge badge-success float-right">Active</span>
+                            <span t-else="" class="badge badge-secondary float-right">Inactive</span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5>General Information</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Type:</strong></td>
+                                        <td>
+                                            <span t-if="rule.apply_by_group">Group-based</span>
+                                            <span t-else="">User-based</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Read Only:</strong></td>
+                                        <td>
+                                            <span t-if="rule.read_only">Yes</span>
+                                            <span t-else="">No</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Company:</strong></td>
+                                        <td>
+                                            <span t-if="rule.company_id" t-field="rule.company_id.name"/>
+                                            <span t-else="">All Companies</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Created:</strong></td>
+                                        <td>
+                                            <span t-field="rule.create_date" t-options='{"widget": "datetime"}'/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Restriction Summary</h5>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Hidden Menus:</strong></td>
+                                        <td><span t-esc="menu_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Model Restrictions:</strong></td>
+                                        <td><span t-esc="model_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Field Restrictions:</strong></td>
+                                        <td><span t-esc="field_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Domain Filters:</strong></td>
+                                        <td><span t-esc="domain_count"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>UI Elements:</strong></td>
+                                        <td><span t-esc="button_count"/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-toggle="tab" href="#menus" role="tab">Menus</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="tab" href="#models" role="tab">Models</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="tab" href="#fields" role="tab">Fields</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="tab" href="#domains" role="tab">Domains</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="tab" href="#ui_elements" role="tab">UI Elements</a>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content">
+                                    <div class="tab-pane fade show active" id="menus" role="tabpanel">
+                                        <t t-if="rule.menu_access_ids">
+                                            <table class="table table-sm mt-3">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Menu</th>
+                                                        <th>Hidden</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="rule.menu_access_ids" t-as="menu">
+                                                        <tr>
+                                                            <td><span t-field="menu.menu_id.complete_name"/></td>
+                                                            <td>
+                                                                <span t-if="menu.hidden" class="text-danger">
+                                                                    <i class="fa fa-check"/> Hidden
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </t>
+                                        <t t-else="">
+                                            <p class="text-muted mt-3">No menu restrictions.</p>
+                                        </t>
+                                    </div>
+                                    
+                                    <div class="tab-pane fade" id="models" role="tabpanel">
+                                        <t t-if="rule.model_access_ids">
+                                            <table class="table table-sm mt-3">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Model</th>
+                                                        <th>Read</th>
+                                                        <th>Write</th>
+                                                        <th>Create</th>
+                                                        <th>Delete</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="rule.model_access_ids" t-as="model">
+                                                        <tr>
+                                                            <td><span t-field="model.model_id.name"/></td>
+                                                            <td>
+                                                                <i t-if="model.perm_read" class="fa fa-check text-success"/>
+                                                                <i t-else="" class="fa fa-times text-danger"/>
+                                                            </td>
+                                                            <td>
+                                                                <i t-if="model.perm_write" class="fa fa-check text-success"/>
+                                                                <i t-else="" class="fa fa-times text-danger"/>
+                                                            </td>
+                                                            <td>
+                                                                <i t-if="model.perm_create" class="fa fa-check text-success"/>
+                                                                <i t-else="" class="fa fa-times text-danger"/>
+                                                            </td>
+                                                            <td>
+                                                                <i t-if="model.perm_unlink" class="fa fa-check text-success"/>
+                                                                <i t-else="" class="fa fa-times text-danger"/>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </t>
+                                        <t t-else="">
+                                            <p class="text-muted mt-3">No model restrictions.</p>
+                                        </t>
+                                    </div>
+                                    
+                                    <div class="tab-pane fade" id="fields" role="tabpanel">
+                                        <t t-if="rule.field_access_ids">
+                                            <table class="table table-sm mt-3">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Model</th>
+                                                        <th>Field</th>
+                                                        <th>Read Only</th>
+                                                        <th>Invisible</th>
+                                                        <th>Required</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="rule.field_access_ids" t-as="field">
+                                                        <tr>
+                                                            <td><span t-field="field.model_id.name"/></td>
+                                                            <td><span t-field="field.field_id.field_description"/></td>
+                                                            <td>
+                                                                <i t-if="field.readonly" class="fa fa-check text-warning"/>
+                                                            </td>
+                                                            <td>
+                                                                <i t-if="field.invisible" class="fa fa-check text-info"/>
+                                                            </td>
+                                                            <td>
+                                                                <i t-if="field.required" class="fa fa-check text-danger"/>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </t>
+                                        <t t-else="">
+                                            <p class="text-muted mt-3">No field restrictions.</p>
+                                        </t>
+                                    </div>
+                                    
+                                    <div class="tab-pane fade" id="domains" role="tabpanel">
+                                        <t t-if="rule.domain_access_ids">
+                                            <table class="table table-sm mt-3">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Model</th>
+                                                        <th>Description</th>
+                                                        <th>Domain</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="rule.domain_access_ids" t-as="domain">
+                                                        <tr>
+                                                            <td><span t-field="domain.model_id.name"/></td>
+                                                            <td><span t-field="domain.name"/></td>
+                                                            <td><code><span t-field="domain.domain"/></code></td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </t>
+                                        <t t-else="">
+                                            <p class="text-muted mt-3">No domain filters.</p>
+                                        </t>
+                                    </div>
+                                    
+                                    <div class="tab-pane fade" id="ui_elements" role="tabpanel">
+                                        <t t-if="rule.button_tab_access_ids">
+                                            <table class="table table-sm mt-3">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Model</th>
+                                                        <th>Type</th>
+                                                        <th>Name</th>
+                                                        <th>Restrictions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <t t-foreach="rule.button_tab_access_ids" t-as="element">
+                                                        <tr>
+                                                            <td><span t-field="element.model_id.name"/></td>
+                                                            <td><span t-field="element.element_type"/></td>
+                                                            <td><span t-field="element.element_name"/></td>
+                                                            <td>
+                                                                <span t-if="element.invisible" class="badge badge-info">Hidden</span>
+                                                                <span t-if="element.readonly" class="badge badge-warning">Read Only</span>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </tbody>
+                                            </table>
+                                        </t>
+                                        <t t-else="">
+                                            <p class="text-muted mt-3">No UI element restrictions.</p>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    
+    <!-- Access Test Page -->
+    <template id="portal_access_test" name="Access Test">
+        <t t-call="portal.portal_layout">
+            <div class="container mt-4">
+                <h2>Access Permission Test</h2>
+                <p class="lead">Test your access permissions for different models and operations.</p>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <form id="access_test_form">
+                            <div class="form-group">
+                                <label for="model_select">Select Model</label>
+                                <select class="form-control" id="model_select" name="model">
+                                    <option value="">-- Choose a model --</option>
+                                    <t t-foreach="models" t-as="model">
+                                        <option t-att-value="model.model">
+                                            <t t-esc="model.name"/> (<t t-esc="model.model"/>)
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Operation</label>
+                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                    <label class="btn btn-outline-primary">
+                                        <input type="radio" name="operation" value="read"/> Read
+                                    </label>
+                                    <label class="btn btn-outline-primary">
+                                        <input type="radio" name="operation" value="write"/> Write
+                                    </label>
+                                    <label class="btn btn-outline-primary">
+                                        <input type="radio" name="operation" value="create"/> Create
+                                    </label>
+                                    <label class="btn btn-outline-primary">
+                                        <input type="radio" name="operation" value="unlink"/> Delete
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Test Access</button>
+                        </form>
+                        
+                        <div id="test_results" class="mt-4" style="display:none;">
+                            <h4>Test Results</h4>
+                            <div id="results_content"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4>Your Active Access Rules</h4>
+                    </div>
+                    <div class="card-body">
+                        <t t-if="rules">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Rule Name</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Restrictions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="rules" t-as="rule">
+                                        <tr>
+                                            <td>
+                                                <a t-attf-href="/my/access-rules/#{rule.id}">
+                                                    <t t-esc="rule.name"/>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <t t-if="rule.apply_by_group">Group-based</t>
+                                                <t t-else="">User-based</t>
+                                            </td>
+                                            <td>
+                                                <span t-if="rule.active" class="badge badge-success">Active</span>
+                                                <span t-else="" class="badge badge-secondary">Inactive</span>
+                                            </td>
+                                            <td><t t-esc="rule.access_rules_count"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                        <t t-else="">
+                            <p class="text-muted">No active access rules found.</p>
+                        </t>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const form = document.getElementById('access_test_form');
+                    const results = document.getElementById('test_results');
+                    const resultsContent = document.getElementById('results_content');
+                    
+                    form.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        
+                        const model = document.getElementById('model_select').value;
+                        const operation = document.querySelector('input[name="operation"]:checked')?.value;
+                        
+                        if (!model || !operation) {
+                            alert('Please select both a model and an operation.');
+                            return;
+                        }
+                        
+                        try {
+                            const response = await fetch('/my/access-test/check', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    jsonrpc: '2.0',
+                                    method: 'call',
+                                    params: {
+                                        model_name: model,
+                                        operation: operation
+                                    }
+                                })
+                            });
+                            
+                            const data = await response.json();
+                            
+                            if (data.error) {
+                                resultsContent.innerHTML = `
+                                    <div class="alert alert-danger">
+                                        <strong>Error:</strong> ${data.error.message}
+                                    </div>
+                                `;
+                            } else {
+                                const result = data.result;
+                                let html = `
+                                    <div class="alert ${result.access ? 'alert-success' : 'alert-danger'}">
+                                        <strong>Access ${result.access ? 'Granted' : 'Denied'}</strong>
+                                        <p>You ${result.access ? 'have' : 'do not have'} ${operation} access to ${model}.</p>
+                                    </div>
+                                `;
+                                
+                                if (result.details) {
+                                    html += '<h5>Details:</h5>';
+                                    
+                                    if (result.details.model_access.length) {
+                                        html += '<h6>Model Access Rules:</h6><ul>';
+                                        result.details.model_access.forEach(access => {
+                                            html += `<li>${access.rule}: Read(${access.read}), Write(${access.write}), Create(${access.create}), Delete(${access.unlink})</li>`;
+                                        });
+                                        html += '</ul>';
+                                    }
+                                    
+                                    if (result.details.field_access.length) {
+                                        html += '<h6>Field Restrictions:</h6><ul>';
+                                        result.details.field_access.forEach(field => {
+                                            html += `<li>${field.field}: `;
+                                            const restrictions = [];
+                                            if (field.readonly) restrictions.push('Read Only');
+                                            if (field.invisible) restrictions.push('Hidden');
+                                            if (field.required) restrictions.push('Required');
+                                            html += restrictions.join(', ') || 'No restrictions';
+                                            html += ` (Rule: ${field.rule})</li>`;
+                                        });
+                                        html += '</ul>';
+                                    }
+                                    
+                                    if (result.details.domain_access.length) {
+                                        html += '<h6>Domain Filters:</h6><ul>';
+                                        result.details.domain_access.forEach(domain => {
+                                            html += `<li>${domain.description}: <code>${domain.domain}</code> (Rule: ${domain.rule})</li>`;
+                                        });
+                                        html += '</ul>';
+                                    }
+                                    
+                                    if (result.details.button_access.length) {
+                                        html += '<h6>UI Element Restrictions:</h6><ul>';
+                                        result.details.button_access.forEach(button => {
+                                            html += `<li>${button.type} "${button.name}": `;
+                                            const restrictions = [];
+                                            if (button.invisible) restrictions.push('Hidden');
+                                            if (button.readonly) restrictions.push('Read Only');
+                                            html += restrictions.join(', ') || 'No restrictions';
+                                            html += ` (Rule: ${button.rule})</li>`;
+                                        });
+                                        html += '</ul>';
+                                    }
+                                }
+                                
+                                resultsContent.innerHTML = html;
+                            }
+                            
+                            results.style.display = 'block';
+                        } catch (error) {
+                            resultsContent.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <strong>Error:</strong> ${error.message}
+                                </div>
+                            `;
+                            results.style.display = 'block';
+                        }
+                    });
+                });
+            </script>
+        </t>
+    </template>
+    
+    <!-- Public Access Info Page -->
+    <template id="public_access_info" name="Access Management Information">
+        <t t-call="website.layout">
+            <div class="container mt-5 mb-5">
+                <h1 class="text-center mb-4">Access Management System</h1>
+                
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h3>What is Access Management?</h3>
+                                <p>Our Access Management system provides fine-grained control over user permissions and access rights throughout the application. It ensures that users only see and interact with the parts of the system they need for their role.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h3>Key Features</h3>
+                                <ul>
+                                    <li><strong>Menu Visibility Control:</strong> Hide specific menus from users or groups</li>
+                                    <li><strong>Model Access Permissions:</strong> Control read, write, create, and delete operations</li>
+                                    <li><strong>Field-Level Security:</strong> Make fields read-only, invisible, or required</li>
+                                    <li><strong>Domain Filtering:</strong> Restrict which records users can see</li>
+                                    <li><strong>UI Element Control:</strong> Hide or disable buttons and tabs</li>
+                                    <li><strong>Multi-Company Support:</strong> Apply rules per company or globally</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h3>How It Works</h3>
+                                <ol>
+                                    <li>Administrators create access rules defining permissions</li>
+                                    <li>Rules are assigned to specific users or groups</li>
+                                    <li>The system automatically enforces these rules</li>
+                                    <li>Users only see and access what they're permitted to</li>
+                                </ol>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body">
+                                <h3>Need Access Changes?</h3>
+                                <p>If you need to request changes to your access permissions:</p>
+                                <a href="/access-request" class="btn btn-primary">Submit Access Request</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+    
+    <!-- Access Request Form -->
+    <template id="public_access_request" name="Access Request Form">
+        <t t-call="website.layout">
+            <div class="container mt-5 mb-5">
+                <h1 class="text-center mb-4">Access Request Form</h1>
+                
+                <div class="row">
+                    <div class="col-md-6 offset-md-3">
+                        <form action="/access-request/submit" method="post">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            
+                            <div class="form-group">
+                                <label for="name">Your Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required="required"/>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required="required"/>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="department">Department</label>
+                                <input type="text" class="form-control" id="department" name="department"/>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="request_type">Request Type *</label>
+                                <select class="form-control" id="request_type" name="request_type" required="required">
+                                    <option value="">-- Select --</option>
+                                    <option value="new_access">New Access</option>
+                                    <option value="modify_access">Modify Existing Access</option>
+                                    <option value="remove_access">Remove Access</option>
+                                    <option value="temporary_access">Temporary Access</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="model">Model/Area</label>
+                                <select class="form-control" id="model" name="model">
+                                    <option value="">-- Select if applicable --</option>
+                                    <t t-foreach="models" t-as="model">
+                                        <option t-att-value="model.model">
+                                            <t t-esc="model.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="description">Description of Request *</label>
+                                <textarea class="form-control" id="description" name="description" 
+                                          rows="5" required="required" 
+                                          placeholder="Please describe what access you need and why..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="justification">Business Justification *</label>
+                                <textarea class="form-control" id="justification" name="justification" 
+                                          rows="3" required="required" 
+                                          placeholder="Explain the business need for this access..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="duration">Duration</label>
+                                <select class="form-control" id="duration" name="duration">
+                                    <option value="permanent">Permanent</option>
+                                    <option value="temporary">Temporary</option>
+                                    <option value="project">For specific project</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group" id="end_date_group" style="display:none;">
+                                <label for="end_date">End Date (if temporary)</label>
+                                <input type="date" class="form-control" id="end_date" name="end_date"/>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-block">Submit Request</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                document.getElementById('duration').addEventListener('change', function() {
+                    const endDateGroup = document.getElementById('end_date_group');
+                    if (this.value === 'temporary') {
+                        endDateGroup.style.display = 'block';
+                    } else {
+                        endDateGroup.style.display = 'none';
+                    }
+                });
+            </script>
+        </t>
+    </template>
+    
+    <!-- Access Request Success -->
+    <template id="public_access_request_success" name="Access Request Submitted">
+        <t t-call="website.layout">
+            <div class="container mt-5 mb-5">
+                <div class="row">
+                    <div class="col-md-6 offset-md-3 text-center">
+                        <div class="card">
+                            <div class="card-body">
+                                <i class="fa fa-check-circle text-success" style="font-size: 72px;"></i>
+                                <h2 class="mt-4">Request Submitted Successfully</h2>
+                                <p class="lead">Your access request has been submitted and will be reviewed by the appropriate team.</p>
+                                <p>You will receive an email notification once your request has been processed.</p>
+                                
+                                <div class="mt-4">
+                                    <h5>Request Summary:</h5>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Name:</strong> <t t-esc="request_data.get('name')"/></li>
+                                        <li><strong>Email:</strong> <t t-esc="request_data.get('email')"/></li>
+                                        <li><strong>Type:</strong> <t t-esc="request_data.get('request_type')"/></li>
+                                        <li><strong>Submitted:</strong> <t t-esc="datetime.datetime.now().strftime('%Y-%m-%d %H:%M')"/></li>
+                                    </ul>
+                                </div>
+                                
+                                <a href="/" class="btn btn-primary mt-4">Return to Home</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
