@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default configuration data -->
+        <!-- System parameters -->
+        <record id="param_cache_timeout" model="ir.config_parameter">
+            <field name="key">access_management.cache_timeout</field>
+            <field name="value">3600</field>
+        </record>
+        <!-- [additional default configuration] -->
+    </data>
+</odoo>
