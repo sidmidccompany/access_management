@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_access_management_tree" model="ir.ui.view">
+        <field name="name">access.management.tree</field>
+        <field name="model">access.management</field>
+        <field name="arch" type="xml">
+            <tree string="Access Management" 
+                  decoration-muted="not active"
+                  decoration-success="state == 'active'"
+                  decoration-danger="state == 'disabled'"
+                  class="o_access_management_tree">
+                <field name="sequence" widget="handle"/>
+                <field name="name" decoration-bf="1"/>
+                <field name="create_uid" string="Created by"/>
+                <field name="create_date" string="Created on" widget="date"/>
+                <field name="user_ids" widget="many2many_tags" 
+                       options="{'color_field': 'color'}" optional="show"/>
+                <field name="group_ids" widget="many2many_tags" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="access_rules_count" string="Access Rules" 
+                       decoration-info="access_rules_count &gt; 0"/>
+                <field name="state" widget="state_selection" optional="show"/>
+                <field name="active" widget="boolean_toggle"/>
+                <button name="action_activate" type="object" 
+                        string="Activate" class="btn-sm btn-success"
+                        attrs="{'invisible': [('active', '=', True)]}"
+                        icon="fa-check"/>
+                <button name="action_deactivate_rule" type="object" 
+                        string="Deactivate" class="btn-sm btn-danger"
+                        attrs="{'invisible': [('active', '=', False)]}"
+                        icon="fa-ban"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_access_management_form" model="ir.ui.view">
+        <field name="name">access.management.form</field>
+        <field name="model">access.management</field>
+        <field name="arch" type="xml">
+            <form string="Access Management" class="o_access_management_form">
+                <header>
+                    <button name="action_activate" type="object" 
+                            string="Activate" class="btn-primary"
+                            attrs="{'invisible': ['|', ('active', '=', True), ('state', '=', 'active')]}"/>
+                    <button name="action_deactivate_rule" type="object" 
+                            string="Deactivate Rule" class="btn-danger"
+                            attrs="{'invisible': ['|', ('active', '=', False), ('state', '=', 'disabled')]}"/>
+                    <button name="toggle_active" type="object" 
+                            string="Access Rules" class="btn-info"
+                            icon="fa-shield"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,active,disabled"
+                           statusbar_colors='{"active":"green","disabled":"red"}'/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" text="Archived" 
+                            bg_color="bg-danger"
+                            attrs="{'invisible': [('active', '=', True)]}"/>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(action_access_management_rules)d" 
+                                type="action" class="oe_stat_button" 
+                                icon="fa-lock">
+                            <field name="access_rules_count" widget="statinfo" 
+                                   string="Rules"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" placeholder="Access Rule Name" 
+                                   class="oe_text_field" required="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group name="configuration" string="Configuration">
+                            <field name="apply_by_group" 
+                                   help="Apply this access rule based on user groups"/>
+                            <field name="read_only" 
+                                   help="Make all permissions read-only"/>
+                            <field name="apply_without_company" 
+                                   help="Apply regardless of user's company"
+                                   groups="base.group_multi_company"/>
+                            <field name="sequence" 
+                                   help="Lower values are applied first"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group name="user_types" string="User Types">
+                            <label for="default_internal_user" string="Apply to:"/>
+                            <div>
+                                <field name="default_internal_user" class="oe_inline"/> 
+                                <label for="default_internal_user" string="Default Internal User"/>
+                            </div>
+                            <label for="default_portal_user" string=""/>
+                            <div>
+                                <field name="default_portal_user" class="oe_inline"/> 
+                                <label for="default_portal_user" string="Default Portal User"/>
+                            </div>
+                            <label for="disable_developer_mode" string=""/>
+                            <div>
+                                <field name="disable_developer_mode" class="oe_inline"/> 
+                                <label for="disable_developer_mode" string="Disable Developer Mode"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group name="users" string="Users" 
+                           attrs="{'invisible': [('apply_by_group', '=', True)]}">
+                        <field name="user_ids" widget="many2many_tags" 
+                               options="{'no_create': True, 'no_create_edit': True}"
+                               domain="[('share', '=', False)]"
+                               placeholder="Select users..."/>
+                    </group>
+                    <group name="groups" string="Groups" 
+                           attrs="{'invisible': [('apply_by_group', '=', False)]}">
+                        <field name="group_ids" widget="many2many_tags"
+                               options="{'no_create': True, 'no_create_edit': True}"
+                               placeholder="Select groups..."/>
+                    </group>
+                    <group name="company" string="Company" groups="base.group_multi_company">
+                        <field name="company_id" options="{'no_create': True}"/>
+                    </group>
+                    <notebook>
+                        <page string="Hide Menu" name="menu_access">
+                            <field name="menu_access_ids" mode="tree" 
+                                   context="{'default_access_id': id}">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="menu_id" 
+                                           options="{'no_create': True, 'no_create_edit': True}"
+                                           domain="[('parent_id', '!=', False)]"/>
+                                    <field name="hidden" widget="boolean_toggle"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <field name="menu_id"/>
+                                        <field name="hidden"/>
+                                        <field name="sequence"/>
+                                    </group>
+                                </form>
+                            </field>
+                            <group>
+                                <button name="%(action_add_menu_wizard)d" 
+                                        type="action" 
+                                        string="Add a line" 
+                                        class="btn-link"
+                                        icon="fa-plus"
+                                        context="{'default_access_id': id}"/>
+                            </group>
+                        </page>
+                        <page string="Model Access" name="model_access">
+                            <field name="model_access_ids" mode="tree" 
+                                   context="{'default_access_id': id}">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="model_id" 
+                                           options="{'no_create': True}"
+                                           widget="many2one_select"/>
+                                    <field name="model_name" readonly="1" optional="hide"/>
+                                    <field name="perm_read" widget="boolean_toggle"/>
+                                    <field name="perm_write" widget="boolean_toggle"
+                                           attrs="{'readonly': [('perm_read', '=', False)]}"/>
+                                    <field name="perm_create" widget="boolean_toggle"
+                                           attrs="{'readonly': [('perm_write', '=', False)]}"/>
+                                    <field name="perm_unlink" widget="boolean_toggle"
+                                           attrs="{'readonly': [('perm_write', '=', False)]}"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Field Access" name="field_access">
+                            <field name="field_access_ids" mode="tree" 
+                                   context="{'default_access_id': id}">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="model_id" 
+                                           options="{'no_create': True}"
+                                           widget="many2one_field_selector"/>
+                                    <field name="field_id" 
+                                           options="{'no_create': True}"
+                                           domain="[('model_id', '=', model_id)]"
+                                           widget="many2one_field_selector"/>
+                                    <field name="field_name" readonly="1" optional="hide"/>
+                                    <field name="field_type" readonly="1" optional="hide"/>
+                                    <field name="readonly" widget="boolean_toggle"/>
+                                    <field name="invisible" widget="boolean_toggle"/>
+                                    <field name="required" widget="boolean_toggle"
+                                           attrs="{'readonly': [('field_type', 'in', ['one2many', 'many2many'])]}"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Field Conditional Access" name="field_conditional">
+                            <field name="field_conditional_access_ids" mode="tree" 
+                                   context="{'default_access_id': id}">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="model_id" 
+                                           options="{'no_create': True}"/>
+                                    <field name="field_id" 
+                                           options="{'no_create': True}"
+                                           domain="[('model_id', '=', model_id)]"/>
+                                    <field name="condition" widget="code" 
+                                           options="{'mode': 'python'}"
+                                           placeholder="e.g., record.state == 'draft'"/>
+                                    <field name="readonly" widget="boolean_toggle"/>
+                                    <field name="invisible" widget="boolean_toggle"/>
+                                    <field name="required" widget="boolean_toggle"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="model_id"/>
+                                            <field name="field_id" 
+                                                   domain="[('model_id', '=', model_id)]"/>
+                                        </group>
+                                        <group>
+                                            <field name="readonly"/>
+                                            <field name="invisible"/>
+                                            <field name="required"/>
+                                        </group>
+                                    </group>
+                                    <separator string="Condition"/>
+                                    <field name="condition" widget="ace" 
+                                           options="{'mode': 'python'}"/>
+                                    <div class="alert alert-info">
+                                        <p><strong>Available variables:</strong></p>
+                                        <ul>
+                                            <li><code>record</code>: Current record</li>
+                                            <li><code>user</code>: Current user</li>
+                                            <li><code>today</code>: Today's date</li>
+                                            <li><code>now</code>: Current datetime</li>
+                                            <li><code>uid</code>: User ID</li>
+                                            <li><code>context</code>: Current context</li>
+                                        </ul>
+                                    </div>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Domain Access" name="domain_access">
+                            <field name="domain_access_ids" mode="tree" 
+                                   context="{'default_access_id': id}">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="model_id" 
+                                           options="{'no_create': True}"/>
+                                    <field name="name" string="Description"/>
+                                    <field name="domain" widget="domain" 
+                                           options="{'model': 'model_id'}"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <field name="model_id"/>
+                                        <field name="name"/>
+                                        <field name="sequence"/>
+                                    </group>
+                                    <separator string="Domain"/>
+                                    <field name="domain" widget="domain" 
+                                           options="{'model': 'model_id', 'in_dialog': True}"/>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Button/Tab Access" name="button_tab">
+                            <field name="button_tab_access_ids" mode="tree" 
+                                   context="{'default_access_id': id}">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="model_id" 
+                                           options="{'no_create': True}"/>
+                                    <field name="element_type" widget="selection"/>
+                                    <field name="element_name" 
+                                           placeholder="e.g., action_confirm"/>
+                                    <field name="element_label" optional="show"
+                                           placeholder="e.g., Confirm"/>
+                                    <field name="view_type" widget="selection"/>
+                                    <field name="invisible" widget="boolean_toggle"/>
+                                    <field name="readonly" widget="boolean_toggle"
+                                           attrs="{'invisible': [('element_type', 'not in', ['button', 'field'])]}"/>
+                                    <field name="attrs" optional="hide" widget="char"/>
+                                </tree>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="model_id"/>
+                                            <field name="element_type"/>
+                                            <field name="element_name"/>
+                                            <field name="element_label"/>
+                                        </group>
+                                        <group>
+                                            <field name="view_type"/>
+                                            <field name="invisible"/>
+                                            <field name="readonly"/>
+                                        </group>
+                                    </group>
+                                    <separator string="Additional Attributes (JSON)"/>
+                                    <field name="attrs" widget="ace" 
+                                           options="{'mode': 'json'}"/>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Search Panel Access" name="search_panel">
+                            <field name="search_panel_access_ids" mode="tree" 
+                                   context="{'default_access_id': id}">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="model_id" 
+                                           options="{'no_create': True}"/>
+                                    <field name="field_id" 
+                                           options="{'no_create': True}"
+                                           domain="[('model_id', '=', model_id), ('store', '=', True)]"/>
+                                    <field name="invisible" widget="boolean_toggle"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Chatter" name="chatter">
+                            <field name="chatter_access_ids" mode="tree" 
+                                   context="{'default_access_id': id}">
+                                <tree editable="bottom" create="1" delete="1">
+                                    <field name="model_id" 
+                                           options="{'no_create': True}"/>
+                                    <field name="disable_chatter" widget="boolean_toggle"/>
+                                    <field name="disable_followers" widget="boolean_toggle"/>
+                                    <field name="disable_activities" widget="boolean_toggle"/>
+                                    <field name="restrict_message_post" widget="boolean_toggle"/>
+                                    <field name="disable_log_note" widget="boolean_toggle"/>
+                                    <field name="disable_attachments" widget="boolean_toggle"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Global" name="global">
+                            <group>
+                                <field name="global_access" widget="ace" 
+                                       options="{'mode': 'python'}"
+                                       placeholder="# Custom Python code for access control"/>
+                            </group>
+                            <div class="alert alert-warning">
+                                <p><strong>Warning:</strong> Global access code is executed at runtime. Use with caution!</p>
+                            </div>
+                        </page>
+                    </notebook>
+                    <separator string="Help &amp; Documentation"/>
+                    <group>
+                        <div class="alert alert-info" role="alert">
+                            <p>
+                                <i class="fa fa-info-circle"/> 
+                                The menu or submenu added on above list will be hidden from the defined user(s).
+                            </p>
+                            <p>
+                                More Info : 
+                                <a href="https://www.terabits.xyz/simplify_access_management#bi-pills-menu" 
+                                   target="_blank">
+                                    https://www.terabits.xyz/simplify_access_management#bi-pills-menu
+                                </a>
+                            </p>
+                        </div>
+                    </group>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers" 
+                           groups="base.group_user"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" 
+                           options="{'post_refresh': 'always'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_access_management_kanban" model="ir.ui.view">
+        <field name="name">access.management.kanban</field>
+        <field name="model">access.management</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" default_group_by="state">
+                <field name="name"/>
+                <field name="user_ids"/>
+                <field name="group_ids"/>
+                <field name="access_rules_count"/>
+                <field name="state"/>
+                <field name="active"/>
+                <field name="company_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_global_click">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                </div>
+                                <div class="o_dropdown_kanban dropdown">
+                                    <a role="button" class="dropdown-toggle o-no-caret btn" 
+                                       data-toggle="dropdown" data-display="static" 
+                                       href="#" aria-label="Dropdown menu" 
+                                       title="Dropdown menu">
+                                        <span class="fa fa-ellipsis-v"/>
+                                    </a>
+                                    <div class="dropdown-menu" role="menu">
+                                        <t t-if="widget.editable">
+                                            <a role="menuitem" type="edit" 
+                                               class="dropdown-item">Edit</a>
+                                        </t>
+                                        <t t-if="widget.deletable">
+                                            <a role="menuitem" type="delete" 
+                                               class="dropdown-item">Delete</a>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div class="text-muted">
+                                    <span>
+                                        <t t-if="record.user_ids.raw_value.length">
+                                            <i class="fa fa-user" title="Users"/> 
+                                            <t t-esc="record.user_ids.raw_value.length"/>
+                                        </t>
+                                        <t t-if="record.group_ids.raw_value.length">
+                                            <i class="fa fa-users" title="Groups"/> 
+                                            <t t-esc="record.group_ids.raw_value.length"/>
+                                        </t>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="badge badge-pill badge-info">
+                                        <field name="access_rules_count"/> Rules
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_bottom">
+                                <div class="oe_kanban_bottom_left">
+                                    <field name="company_id" groups="base.group_multi_company"/>
+                                </div>
+                                <div class="oe_kanban_bottom_right">
+                                    <field name="active" widget="boolean_toggle" nolabel="1"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_access_management_search" model="ir.ui.view">
+        <field name="name">access.management.search</field>
+        <field name="model">access.management</field>
+        <field name="arch" type="xml">
+            <search string="Access Management">
+                <field name="name" string="Name" 
+                       filter_domain="['|', ('name', 'ilike', self), ('user_ids.name', 'ilike', self)]"/>
+                <field name="user_ids" string="Users"/>
+                <field name="group_ids" string="Groups"/>
+                <field name="model_access_ids" string="Models"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <separator/>
+                <filter string="Active" name="active" 
+                        domain="[('active', '=', True)]"
+                        help="Active access rules"/>
+                <filter string="Inactive" name="inactive" 
+                        domain="[('active', '=', False)]"
+                        help="Inactive access rules"/>
+                <separator/>
+                <filter string="Apply By Group" name="apply_by_group" 
+                        domain="[('apply_by_group', '=', True)]"
+                        help="Rules that apply by group"/>
+                <filter string="Read Only" name="read_only" 
+                        domain="[('read_only', '=', True)]"
+                        help="Read-only access rules"/>
+                <filter string="Developer Mode Disabled" name="no_dev_mode" 
+                        domain="[('disable_developer_mode', '=', True)]"
+                        help="Rules that disable developer mode"/>
+                <separator/>
+                <filter string="Internal Users" name="internal_users" 
+                        domain="[('default_internal_user', '=', True)]"
+                        help="Rules for internal users"/>
+                <filter string="Portal Users" name="portal_users" 
+                        domain="[('default_portal_user', '=', True)]"
+                        help="Rules for portal users"/>
+                <separator/>
+                <filter string="My Company" name="my_company" 
+                        domain="[('company_id', '=', company_id)]"
+                        groups="base.group_multi_company"/>
+                <filter string="Created by Me" name="my_rules" 
+                        domain="[('create_uid', '=', uid)]"/>
+                <group expand="0" string="Group By">
+                    <filter string="State" name="state" 
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Company" name="company" 
+                            context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                    <filter string="Created By" name="created_by" 
+                            context="{'group_by': 'create_uid'}"/>
+                    <filter string="Created On" name="created_on" 
+                            context="{'group_by': 'create_date:month'}"/>
+                </group>
+                <searchpanel>
+                    <field name="state" icon="fa-tasks" enable_counters="1"/>
+                    <field name="company_id" icon="fa-building" 
+                           enable_counters="1" groups="base.group_multi_company"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_access_management" model="ir.actions.act_window">
+        <field name="name">Access Management</field>
+        <field name="res_model">access.management</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="search_view_id" ref="view_access_management_search"/>
+        <field name="context">{
+            'create_uid': uid,
+            'search_default_active': 1,
+            'search_default_my_company': 1
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Access Management rule
+            </p>
+            <p>
+                Access Management allows you to control user access to various 
+                parts of the system including menus, models, fields, and more.
+            </p>
+            <p>
+                You can create rules based on users or groups, set them as 
+                read-only, and apply various access restrictions.
+            </p>
+        </field>
+    </record>
+
+    <!-- Action for sub-models -->
+    <record id="action_access_management_rules" model="ir.actions.act_window">
+        <field name="name">Access Rules</field>
+        <field name="res_model">access.management</field>
+        <field name="view_mode">form</field>
+        <field name="res_id" ref="access_management.access_management_1"/>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_access_studio_root" 
+              name="Access Studio" 
+              groups="base.group_system"
+              web_icon="access_management,static/description/icon.png"
+              sequence="100"/>
+    
+    <menuitem id="menu_access_group"
+              name="Access Group"
+              parent="menu_access_studio_root"
+              sequence="1"/>
+              
+    <menuitem id="menu_access_management" 
+              name="Access Management" 
+              parent="menu_access_group"
+              action="action_access_management"
+              sequence="10"/>
+              
+    <menuitem id="menu_access_management_new"
+              name="New"
+              parent="menu_access_management"
+              action="action_access_management"
+              context="{'search_default_create_new': 1}"
+              sequence="1"/>
+</odoo>
