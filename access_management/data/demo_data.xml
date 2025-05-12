@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Demo Users -->
+        <record id="demo_user_limited" model="res.users">
+            <field name="name">Limited Access User</field>
+            <field name="login">limited_user</field>
+            <field name="email">limited@example.com</field>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>
+        </record>
+        
+        <record id="demo_user_manager" model="res.users">
+            <field name="name">Department Manager</field>
+            <field name="login">dept_manager</field>
+            <field name="email">manager@example.com</field>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>
+        </record>
+        
+        <!-- Demo Groups -->
+        <record id="demo_group_sales_limited" model="res.groups">
+            <field name="name">Sales Limited Access</field>
+            <field name="category_id" ref="base.module_category_sales_sales"/>
+        </record>
+        
+        <record id="demo_group_hr_readonly" model="res.groups">
+            <field name="name">HR Read Only</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+        </record>
+        
+        <!-- Demo Access Rules -->
+        <record id="demo_rule_sales_limited" model="access.management">
+            <field name="name">Sales Limited Access Rule</field>
+            <field name="active">True</field>
+            <field name="apply_by_group">True</field>
+            <field name="read_only">False</field>
+            <field name="sequence">10</field>
+            <field name="group_ids" eval="[(6, 0, [ref('demo_group_sales_limited')])]"/>
+        </record>
+        
+        <record id="demo_rule_hr_readonly" model="access.management">
+            <field name="name">HR Read Only Rule</field>
+            <field name="active">True</field>
+            <field name="apply_by_group">True</field>
+            <field name="read_only">True</field>
+            <field name="sequence">20</field>
+            <field name="group_ids" eval="[(6, 0, [ref('demo_group_hr_readonly')])]"/>
+        </record>
+        
+        <record id="demo_rule_user_specific" model="access.management">
+            <field name="name">Limited User Specific Rule</field>
+            <field name="active">True</field>
+            <field name="apply_by_group">False</field>
+            <field name="read_only">False</field>
+            <field name="sequence">30</field>
+            <field name="user_ids" eval="[(6, 0, [ref('demo_user_limited')])]"/>
+        </record>
+        
+        <!-- Menu Access Rules -->
+        <record id="demo_menu_access_1" model="access.management.menu">
+            <field name="access_id" ref="demo_rule_sales_limited"/>
+            <field name="menu_id" ref="base.menu_administration"/>
+            <field name="hidden">True</field>
+        </record>
+        
+        <record id="demo_menu_access_2" model="access.management.menu">
+            <field name="access_id" ref="demo_rule_user_specific"/>
+            <field name="menu_id" ref="base.menu_management"/>
+            <field name="hidden">True</field>
+        </record>
+        
+        <!-- Model Access Rules -->
+        <record id="demo_model_access_1" model="access.management.model">
+            <field name="access_id" ref="demo_rule_sales_limited"/>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">True</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
+        </record>
+        
+        <record id="demo_model_access_2" model="access.management.model">
+            <field name="access_id" ref="demo_rule_hr_readonly"/>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="perm_read">True</field>
+            <field name="perm_write">False</field>
+            <field name="perm_create">False</field>
+            <field name="perm_unlink">False</field>
+        </record>
+        
+        <!-- Field Access Rules -->
+        <record id="demo_field_access_1" model="access.management.field">
+            <field name="access_id" ref="demo_rule_sales_limited"/>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="field_id" ref="base.field_res_partner__credit_limit"/>
+            <field name="readonly">True</field>
+            <field name="invisible">False</field>
+            <field name="required">False</field>
+        </record>
+        
+        <record id="demo_field_access_2" model="access.management.field">
+            <field name="access_id" ref="demo_rule_user_specific"/>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="field_id" ref="base.field_res_partner__vat"/>
+            <field name="readonly">False</field>
+            <field name="invisible">True</field>
+            <field name="required">False</field>
+        </record>
+        
+        <!-- Domain Access Rules -->
+        <record id="demo_domain_access_1" model="access.management.domain">
+            <field name="access_id" ref="demo_rule_sales_limited"/>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="name">Only Customers</field>
+            <field name="domain">[('customer_rank', '>', 0)]</field>
+        </record>
+        
+        <record id="demo_domain_access_2" model="access.management.domain">
+            <field name="access_id" ref="demo_rule_user_specific"/>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="name">Only Active Partners</field>
+            <field name="domain">[('active', '=', True)]</field>
+        </record>
+        
+        <!-- Button/Tab Access Rules -->
+        <record id="demo_button_access_1" model="access.management.button.tab">
+            <field name="access_id" ref="demo_rule_sales_limited"/>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="element_type">button</field>
+            <field name="element_name">action_archive</field>
+            <field name="invisible">True</field>
+            <field name="readonly">False</field>
+        </record>
+        
+        <record id="demo_button_access_2" model="access.management.button.tab">
+            <field name="access_id" ref="demo_rule_hr_readonly"/>
+            <field name="model_id" ref="base.model_res_users"/>
+            <field name="element_type">page</field>
+            <field name="element_name">security</field>
+            <field name="invisible">True</field>
+            <field name="readonly">False</field>
+        </record>
+        
+        <!-- Chatter Access Rules -->
+        <record id="demo_chatter_access_1" model="access.management.chatter">
+            <field name="access_id" ref="demo_rule_user_specific"/>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="disable_chatter">False</field>
+            <field name="disable_followers">True</field>
+            <field name="disable_activities">True</field>
+            <field name="restrict_message_post">True</field>
+        </record>
+        
+        <!-- Demo Rule with All Features -->
+        <record id="demo_rule_comprehensive" model="access.management">
+            <field name="name">Comprehensive Demo Rule (Inactive)</field>
+            <field name="active">False</field>
+            <field name="apply_by_group">True</field>
+            <field name="read_only">False</field>
+            <field name="sequence">100</field>
+            <field name="default_internal_user">True</field>
+            <field name="disable_developer_mode">True</field>
+            <field name="global_access">
+# Custom access logic
+# This is a demo of global access code
+# You can add Python code here to implement
+# custom access control logic
+
+# Example:
+# if user.has_group('base.group_user'):
+#     return True
+# return False
+            </field>
+        </record>
+    </data>
+</odoo>
